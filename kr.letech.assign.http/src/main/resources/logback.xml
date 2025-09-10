@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- 콘솔 인코딩이 한글이면 Eclipse 콘솔도 UTF-8로 바꿔 줘라. -->
+  <property name="LOG_DIR" value="./logs"/>
+
+  <!-- JUL 브리지(선택): JUL 로그를 Logback으로 리다이렉트 -->
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+    <resetJUL>true</resetJUL>
+  </contextListener>
+
+  <!-- 콘솔 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 롤링 파일 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_DIR}/app.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_DIR}/app.%d{yyyy-MM-dd}.gz</fileNamePattern>
+      <maxHistory>14</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder>
+      <!-- MDC의 reqId를 찍고 싶다면 %X{reqId} -->
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%X{reqId}] %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 비동기(파일 I/O 병목 방지). 콘솔은 동기 놔두는 편. -->
+  <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>8192</queueSize>
+    <neverBlock>true</neverBlock>
+    <appender-ref ref="FILE"/>
+  </appender>
+
+  <!-- 패키지별 레벨 조절 -->
+  <logger name="your.pkg" level="DEBUG"/>
+
+  <!-- 루트 -->
+  <root level="DEBUG">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ASYNC_FILE"/>
+  </root>
+<typeAliases></typeAliases>
+</configuration>
